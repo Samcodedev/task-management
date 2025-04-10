@@ -115,7 +115,7 @@ const emailTemplates = {
 const sendEmail = async (to, templateName, data = {}) => {
     try {
         if (!emailTemplates[templateName]) {
-            throw new Error(`Email template '${templateName}' not found`);
+            next(new Error(`Email template '${templateName}' not found`))
         }
 
         const template = emailTemplates[templateName](data);

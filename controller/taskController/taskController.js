@@ -25,13 +25,15 @@ const createTask = asyncHandler(async (req, res, next) => {
 
         if (!title || !description) {
             res.status(400);
-            throw new Error("All input field are required")
+            next(new Error("All input field are required"))
         }
 
         if (user.role !== "admin" && user.role !== "manager") {
             res.status(404);
-            throw new Error("Member not permitted to create task");
+            next(new Error("Member not permitted to create task"))
         }
+
+        // note add task to user data
         
 
         const createTask = await Task.create({
@@ -49,7 +51,7 @@ const createTask = asyncHandler(async (req, res, next) => {
 
         if (!createTask) {
             res.status(404);
-            throw new Error("something went wrong while creating task");
+            next(new Error("something went wrong while creating task"))
         }
 
         res.status(200).json({
@@ -59,11 +61,11 @@ const createTask = asyncHandler(async (req, res, next) => {
 
     } catch (err) {
         res.status(401)
-        throw new Error(err.message)
+        next(new Error(err.message))
     }
 })
 
-const updateTask = asyncHandler(async (req, res) => {
+const updateTask = asyncHandler(async (req, res, next) => {
     try {
         const {
             title,
@@ -82,7 +84,7 @@ const updateTask = asyncHandler(async (req, res) => {
         
         if (!access) {
             res.status(403)
-            throw new Error("You don't have access to this task")
+            next(new Error("You don't have access to this task"))
         }
 
         if (access.role === 'creator') {
@@ -112,7 +114,7 @@ const updateTask = asyncHandler(async (req, res) => {
 
             if (!updateTask) {
                 res.status(403)
-                throw new Error("something went wrong while updating task")
+                next(new Error("something went wrong while updating task"))
             }
 
             res.status(200).json({ 
@@ -145,7 +147,7 @@ const updateTask = asyncHandler(async (req, res) => {
 
             if (!updateTask) {
                 res.status(403)
-                throw new Error("something went wrong while updating task")
+                next(new Error("something went wrong while updating task"))
             }
 
             res.status(200).json({ 
@@ -175,7 +177,7 @@ const updateTask = asyncHandler(async (req, res) => {
 
             if (!updateTask) {
                 res.status(403)
-                throw new Error("something went wrong while updating task")
+                next(new Error("something went wrong while updating task"))
             }
 
             res.status(200).json({ 
@@ -185,7 +187,7 @@ const updateTask = asyncHandler(async (req, res) => {
 
     } catch (err) {
         res.status(401)
-        throw new Error(err.message)
+        next(new Error(err.message))
     }
 })
 

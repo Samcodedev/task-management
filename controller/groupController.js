@@ -6,7 +6,7 @@ const { User } = require('../model/userModel');
 const Group = require("../model/groupModel");
 
 
-const createGroup = asyncHandler(async (req, res) => {
+const createGroup = asyncHandler(async (req, res, next) => {
     try {
         const {
             groupName,
@@ -18,16 +18,15 @@ const createGroup = asyncHandler(async (req, res) => {
 
         if (!groupName || !description) {
             res.status(400)
-            throw new Error('All input are required')
+            next(new Error('All input are required'))
         }
 
-        const groupExists = await Group.findOne({ groupName })
-        if (groupExists) {
+        if (await Group.findOne({ groupName })) {
             res.status(400)
-            throw new Error('Group name already in used try something else')
+            next(new Error('Group name already in used try something else'))
         }
 
-        let groupData = {
+        const group = await Group.create({
             groupName,
             description,
             members: [
@@ -37,9 +36,7 @@ const createGroup = asyncHandler(async (req, res) => {
                 }
             ],
             createdBy: userId
-        }
-
-        const group = await Group.create(groupData)
+        })
 
         const addToUserGroup = await User.findByIdAndUpdate(
             userId,
@@ -48,20 +45,22 @@ const createGroup = asyncHandler(async (req, res) => {
 
         if (!group) {
             res.status(500)
-            throw new Error('something went wrong while creating group')
+            next(new Error('something went wrong while creating group'))
         }
 
         if (!addToUserGroup) {
             res.status(500)
-            throw new Error('something went wrong while adding group to your list')
+            next(new Error('something went wrong while adding group to your list'))
         }
 
         res.status(200).json({
+            success: true,
             message: `${groupName} created successfully`
         })
 
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        res.status(500)
+        next(new Error(err.message))
     }
 });
 
@@ -73,18 +72,18 @@ const updateGroup = asyncHandler(async (req, res) => {
         const group = await Group.findById(groupId)
         if (!group) {
             res.status(404)
-            throw new Error('group not found')
+            next(new Error('group not found'))
         }
         
         if (userId != (group.createdBy).toString()) {
             res.status(401)
-            throw new Error('User not authorize to update group')
+            next(new Error('User not authorize to update group'))
         }
 
         const updateGroup = await Group.findByIdAndUpdate(groupId, { ...req.body }, { new: true })
         if (!updateGroup) {
             res.status(500)
-            throw new Error('something went wrong while updating group')
+            next(new Error('something went wrong while updating group'))
         }
 
         res.status(200).json({message: "group updated successfully"})

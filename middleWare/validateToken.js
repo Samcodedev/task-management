@@ -8,7 +8,7 @@ const validateToken = asyncHandler(async (req, res, next) => {
         
         if (!authHeader || !authHeader.startsWith('Bearer')) {
             res.status(401)
-            throw new Error('User is not authorized or token is missing')
+            next(new Error('User is not authorized or token is missing'))
         }
 
         const token = authHeader.split(' ')[1]
@@ -17,14 +17,14 @@ const validateToken = asyncHandler(async (req, res, next) => {
         const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET)
         if (!decoded) {
             res.status(401)
-            throw new Error('Invalid token payload')
+            next(new Error('Invalid token payload'))
         }
         
         req.user = decoded
         next()
     } catch (error) {
         res.status(401)
-        throw new Error(error.message || 'User is not authorized')
+        next(new Error(error.message || 'User is not authorized'))
     }
 })
 

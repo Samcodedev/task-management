@@ -1,8 +1,10 @@
 const constant = require('./status.json');
 
-// Handling all errors by displaying them in JSON format
+
 const handleError = (error, req, res, next) => {
     const statusCode = res.statusCode !== 200 ? res.statusCode : 500;
+    console.log(statusCode);
+    
 
     let errorTitle = "Unknown Error";
     for (const item of constant) {
@@ -17,8 +19,7 @@ const handleError = (error, req, res, next) => {
     res.status(statusCode).json({
         title: errorTitle,
         message: error.message,
-        status: statusCode,
-        location: error.stack
+        status: statusCode
     });
 };
 

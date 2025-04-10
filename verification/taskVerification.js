@@ -15,25 +15,25 @@ const taskAssignVerification = asyncHandler(async (req, res, next) => {
         const group = await Group.findById(groupId)
         if (!group) {
             res.status(404)
-            throw new Error('group not found')
+            next(new Error('group not found'))
         }
     
         const checkUser = await checkUserInGroup(groupId, userId)
         if (checkUser === null) {
             res.status(404)
-            throw new Error('user not on the group')
+            next(new Error('user not on the group'))
         }
     
         const checkAssigned = await checkUserInGroup(groupId, assignedTo)
         if (checkAssigned === null) {
             res.status(404)
-            throw new Error('user assigned not in group')
+            next(new Error('user assigned not in group'))
         }
     
         const checkSupervisor = await checkUserInGroup(groupId, supervisor)
         if (checkSupervisor === null) {
             res.status(404)
-            throw new Error('supervisor not in group')
+            next(new Error('supervisor not in group'))
         }
 
         // console.log('good to go');
@@ -59,7 +59,7 @@ const taskAssignVerification = asyncHandler(async (req, res, next) => {
         
     } catch (err) {
         res.status(401)
-        throw new Error(err.message || 'User is not authorized')
+        next(new Error(err.message || 'User is not authorized'))
     }
     
 

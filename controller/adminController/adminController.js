@@ -1,8 +1,5 @@
 const asyncHandler = require("express-async-handler");
-const bcrypt = require("bcrypt");
-const jwt = require("jsonwebtoken");
 const { User } = require('../../model/userModel');
-// const { sendEmail } = require('../middleWare/handleMail');
 const Group = require("../../model/groupModel");
 
 
@@ -21,7 +18,7 @@ const setRole = asyncHandler(async (req, res, next) => {
 
         if (!verifyMember) {
             res.status(404)
-            throw new Error('user not a member of the group')
+            next(new Error('user not a member of the group'))
         }
 
         if (!["admin", "manager", "member"].includes(role)) {
@@ -79,12 +76,12 @@ const addMember = asyncHandler(async (req, res, next) => {
         const group = await Group.findById(groupId)
         if (!group) {
             res.status(404)
-            throw new Error('group not found')
+            next(new Error('group not found'))
         }
         
         if (userId != (group.createdBy).toString()) {
             res.status(401)
-            throw new Error('User not authorize to update group admin')
+            next(new Error('User not authorize to update group admin'))
         }
 
         const checkNewMember = await Group.findOne({
@@ -93,36 +90,28 @@ const addMember = asyncHandler(async (req, res, next) => {
 
         if (checkNewMember) {
             res.status(404)
-            throw new Error('user already added to the group')
+            next(new Error('user already added to the group'))
         }
 
-        const verifyNewMember = await User.findById(newMemberId)
-        if (!verifyNewMember) {
+        if (!await User.findById(newMemberId)) {
             res.status(404)
-            throw new Error('user do not exist')
+            next(new Error('user do not exist'))
         }
 
-        const addUserNewMember = await Group.findByIdAndUpdate(
+        if (!await Group.findByIdAndUpdate(
             groupId,
             {
                 $push: { members: { user: newMemberId } },
             },
             { new: true, runValidators: true }
-        )
-
-        const addToUserGroup = await User.findByIdAndUpdate(
-            newMemberId,
-            {$push: {"groups": groupId}}
-        )
-
-        if (!addUserNewMember) {
+        )) {
             res.status(500)
-            throw new Error('something went wrong while adding user')
+            next(new Error('something went wrong while adding user'))
         }
 
-        if (!addToUserGroup) {
+        if (!await User.findByIdAndUpdate(newMemberId,{$push: {"groups": groupId}})) {
             res.status(500)
-            throw new Error('something went wrong while adding group to member list')
+            next(new Error('something went wrong while adding group to member list'))
         }
 
         console.log(addUserNewMember);
@@ -154,6 +143,14 @@ const removeMember = asyncHandler(async (req, res, next) => {
         if (!removeMember) {
             res.status(500)
             next(new Error('something went wrong while deleting member'))
+        }
+
+        if (!await User.findByIdAndUpdate(
+            memberId,
+            { $pull: { groups: groupId}}
+        )) {
+            res.status(500)
+            next(new Error('something went wrong while updating your groups'))
         }
 
         res.status(200).json({ 

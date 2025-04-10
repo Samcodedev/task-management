@@ -13,12 +13,12 @@ const adminVerification = asyncHandler(async (req, res, next) => {
         const group = await Group.findById(groupId)
         if (!group) {
             res.status(404)
-            throw new Error('group not found')
+            next(new Error('group not found'))
         }
         
         if (userId != (group.createdBy).toString()) {
             res.status(401)
-            throw new Error('User not authorize to update group admin')
+            next(new Error('User not authorize to update group admin'))
         }
         
         const verifyMember = await Group.findOne({
@@ -27,7 +27,7 @@ const adminVerification = asyncHandler(async (req, res, next) => {
 
         if (!verifyMember) {
             res.status(404)
-            throw new Error('user not a member of the group')
+            next(new Error('user not a member of the group'))
         }
 
         let verify = {...verifyMember._doc, memberId, userId}
@@ -37,7 +37,7 @@ const adminVerification = asyncHandler(async (req, res, next) => {
 
     } catch (err) {
         res.status(401)
-        throw new Error(err.message || 'User is not authorized')
+        next(new Error(err.message || 'User is not authorized'))
     }
 })
 
