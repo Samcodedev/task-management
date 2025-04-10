@@ -1,8 +1,5 @@
 const asyncHandler = require("express-async-handler");
-const bcrypt = require("bcrypt");
-const jwt = require("jsonwebtoken");
 const { User } = require('../model/userModel');
-// const { sendEmail } = require('../middleWare/handleMail');
 const Group = require("../model/groupModel");
 
 
@@ -38,17 +35,15 @@ const createGroup = asyncHandler(async (req, res, next) => {
             createdBy: userId
         })
 
-        const addToUserGroup = await User.findByIdAndUpdate(
-            userId,
-            {$push: {"groups": group._id}}
-        )
-
         if (!group) {
             res.status(500)
             next(new Error('something went wrong while creating group'))
         }
 
-        if (!addToUserGroup) {
+        if (!await User.findByIdAndUpdate(
+            userId,
+            {$push: {"groups": group._id}}
+        )) {
             res.status(500)
             next(new Error('something went wrong while adding group to your list'))
         }
@@ -64,7 +59,7 @@ const createGroup = asyncHandler(async (req, res, next) => {
     }
 });
 
-const updateGroup = asyncHandler(async (req, res) => {
+const updateGroup = asyncHandler(async (req, res, next) => {
     try {
         const { userId } = req.user
         const groupId = req.params.id
@@ -80,15 +75,18 @@ const updateGroup = asyncHandler(async (req, res) => {
             next(new Error('User not authorize to update group'))
         }
 
-        const updateGroup = await Group.findByIdAndUpdate(groupId, { ...req.body }, { new: true })
-        if (!updateGroup) {
+        if (!await Group.findByIdAndUpdate(groupId, { ...req.body }, { new: true })) {
             res.status(500)
             next(new Error('something went wrong while updating group'))
         }
 
-        res.status(200).json({message: "group updated successfully"})
+        res.status(200).json({
+            success: true,
+            message: "group updated successfully"
+        })
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        res.status(500)
+        next(new Error(err.message))
     }
     
 })

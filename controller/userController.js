@@ -119,7 +119,7 @@ const loginUser = asyncHandler(async (req, res, next) => {
         }
 
         const token = jwt.sign(
-            { id: user._id }, 
+            { userId: user._id }, 
             process.env.ACCESS_TOKEN_SECRET, 
             { expiresIn: "15d" }
         );
@@ -136,11 +136,10 @@ const loginUser = asyncHandler(async (req, res, next) => {
         next(new Error(err.message))
     }
 });
-// eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2N2UyMDdlZTdjNzM2ODlmYzdkM2NjOGYiLCJpYXQiOjE3NDI4NzExNDcsImV4cCI6MTc0NDE2NzE0N30.u0wdkFQSUPZu7BIrP3A-EuzW4UzhLj3j-SqoZmvN3Go
 
 const getUser = asyncHandler(async (req, res, next) => {
     try {
-        const user = await User.findById(req.user.id)
+        const user = await User.findById(req.user.userId)
         if(!user){
             res.status(400)
             next(new Error("User not found"))
