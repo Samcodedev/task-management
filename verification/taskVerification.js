@@ -12,8 +12,7 @@ const taskAssignVerification = asyncHandler(async (req, res, next) => {
         const groupId = req.params.id
         
         
-        const group = await Group.findById(groupId)
-        if (!group) {
+        if (!await Group.findById(groupId)) {
             res.status(404)
             next(new Error('group not found'))
         }
@@ -36,7 +35,6 @@ const taskAssignVerification = asyncHandler(async (req, res, next) => {
             next(new Error('supervisor not in group'))
         }
 
-        // console.log('good to go');
 
         let verify = { 
             assignedTo: {

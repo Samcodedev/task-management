@@ -80,7 +80,6 @@ const updateTask = asyncHandler(async (req, res, next) => {
         const taskId = req.params.id
 
         const access = await checkUserAccess(taskId, userId)
-        console.log(access);
         
         if (!access) {
             res.status(403)
@@ -103,9 +102,9 @@ const updateTask = asyncHandler(async (req, res, next) => {
             )
 
             if (message) {
-                const updatedTask = await addComment(taskId, userId, message);
+                const addComments = await addComment(taskId, userId, message);
 
-                if (!updatedTask) {
+                if (!addComments) {
                     return res.status(404).json({ 
                         message: "unable to add comment" 
                     });
@@ -136,9 +135,9 @@ const updateTask = asyncHandler(async (req, res, next) => {
             )
 
             if (message) {
-                const addComment = await addComment(taskId, userId, message);
+                const addComments = await addComment(taskId, userId, message);
 
-                if (!addComment) {
+                if (!addComments) {
                     return res.status(404).json({ 
                         message: "unable to add comment" 
                     });
@@ -166,9 +165,9 @@ const updateTask = asyncHandler(async (req, res, next) => {
             )
 
             if (message) {
-                const addComment = await addComment(taskId, userId, message);
+                const addComments = await addComment(taskId, userId, message);
 
-                if (!addComment) {
+                if (!addComments) {
                     return res.status(404).json({ 
                         message: "unable to add comment" 
                     });
