@@ -12,11 +12,10 @@ const setRole = asyncHandler(async (req, res, next) => {
         const groupId = _id
         const { role } = req.body
 
-        const verifyMember = await Group.findOne({
-            "members.user": memberId,
-        })
 
-        if (!verifyMember) {
+        if (!await Group.findOne({
+            "members.user": memberId,
+        })) {
             res.status(404)
             next(new Error('user not a member of the group'))
         }
@@ -56,7 +55,10 @@ const setRole = asyncHandler(async (req, res, next) => {
             next(new Error(`something went wrong while setting ${role}`))
         }
 
-        res.status(200).json({message: `${role} set successfully`})
+        res.status(200).json({
+            success: true,
+            message: `${role} set successfully`
+        })
 
     } catch (err) {
         res.status(500)
@@ -84,11 +86,9 @@ const addMember = asyncHandler(async (req, res, next) => {
             next(new Error('User not authorize to update group admin'))
         }
 
-        const checkNewMember = await Group.findOne({
+        if (await Group.findOne({
             "members.user": newMemberId,
-        })
-
-        if (checkNewMember) {
+        })) {
             res.status(404)
             next(new Error('user already added to the group'))
         }
@@ -113,11 +113,10 @@ const addMember = asyncHandler(async (req, res, next) => {
             res.status(500)
             next(new Error('something went wrong while adding group to member list'))
         }
-
-        console.log(addUserNewMember);
         
 
         res.status(200).json({ 
+            success: true,
             message: "user added successfully."
         })
     } catch (err) {
@@ -134,13 +133,11 @@ const removeMember = asyncHandler(async (req, res, next) => {
         } = req.adminVerify
         const groupId = _id.toString()
 
-        const removeMember = await Group.findByIdAndUpdate(
+        if (!await Group.findByIdAndUpdate(
             groupId,
             { $pull: { members: { user: memberId } } },
             { new: true }
-        );
-
-        if (!removeMember) {
+        )) {
             res.status(500)
             next(new Error('something went wrong while deleting member'))
         }
