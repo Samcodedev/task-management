@@ -1,26 +1,49 @@
-
-
-const inputVerification = async ( input ) => {
+const inputVerification = async (validationRules) => {
     try {
-        if (typeof input === "string") {
-            return "string";
-        } else if (typeof input === "number" && Number.isInteger(input)) {
-            return "integer";
-        } else if (typeof input === "boolean") {
-            return "boolean";
-        } else if (Array.isArray(input)) {
-            return "array";
-        } else if (typeof input === "object" && input !== null) {
-            return "object";
-        } else if (input === null) {
-            return "Input is null";
-        } else {
-            return "Unknown data type";
+        const validationErrors = [];
+
+        for (const rule of validationRules) {
+            const { value, type, message } = rule;
+            let inputType;
+
+            if (typeof value === "string") {
+                inputType = "string";
+            } else if (typeof value === "number" && Number.isInteger(value)) {
+                inputType = "integer";
+            } else if (typeof value === "boolean") {
+                inputType = "boolean";
+            } else if (Array.isArray(value)) {
+                inputType = "array";
+            } else if (typeof value === "object" && value !== null) {
+                inputType = "object";
+            } else if (value === null) {
+                inputType = null;
+            } else {
+                inputType = "Unknown data type";
+            }
+
+            if (inputType !== type) {
+                validationErrors.push(message);
+            }
         }
+
+        if (validationErrors.length > 0) {
+            return {
+                isValid: false,
+                errors: validationErrors
+            };
+        }
+
+        return {
+            isValid: true,
+            errors: []
+        };
     } catch (err) {
-        return null
+        return {
+            isValid: false,
+            errors: ["An error occurred during validation"]
+        };
     }
 }
-
 
 module.exports = { inputVerification }

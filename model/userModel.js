@@ -40,19 +40,19 @@ const OTPSchema = new mongoose.Schema({
 // Add methods to handle OTP
 UserSchema.methods.generateOTP = async function() {
   // Generate a 6-digit OTP
-  const otp = Math.floor(100000 + Math.random() * 900000).toString();
+  const otp = Math.floor(100000 + Math.random() * 900000);
   
   // Create or update OTP document
   await mongoose.model('OTP').findOneAndUpdate(
     { userId: this._id },
     { 
       userId: this._id,
-      otp: otp
+      otp: otp.toString() // Store as string in database but return as number
     },
     { upsert: true, new: true }
   );
   
-  return otp;
+  return otp; // Return as number
 };
 
 UserSchema.methods.verifyOTP = async function(otpToVerify) {
