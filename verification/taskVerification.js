@@ -10,6 +10,18 @@ const taskAssignVerification = asyncHandler(async (req, res, next) => {
         } = req.body
         const { userId } = req.user
         const groupId = req.params.id
+
+        const validationRules = [
+            { value: assignedTo, type: 'string', message: 'assigned member must be a string' },
+            { value: supervisor, type: 'string', message: 'supervisor must be a string' }
+        ];
+
+        const validationResult = await inputVerification(validationRules);
+
+        if (!validationResult.isValid) {
+            res.status(400);
+            next(new Error(validationResult.errors.join(', ')));
+        }
         
         
         if (!await Group.findById(groupId)) {

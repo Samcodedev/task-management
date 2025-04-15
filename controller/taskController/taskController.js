@@ -15,6 +15,22 @@ const createTask = asyncHandler(async (req, res, next) => {
             tasksList
         } = req.body
 
+        const validationRules = [
+            { value: title, type: 'string', message: 'assigned member must be a string' },
+            { value: description, type: 'string', message: 'description must be a string' },
+            { value: status, type: 'string', message: 'status must be a string' },
+            { value: priority, type: 'string', message: 'priority must be a string' },
+            { value: dueDate, type: 'string', message: 'due date must be a string' },
+            { value: tasksList, type: 'string', message: 'tasks list must be a string' }
+        ];
+
+        const validationResult = await inputVerification(validationRules);
+
+        if (!validationResult.isValid) {
+            res.status(400);
+            next(new Error(validationResult.errors.join(', ')));
+        }
+
         const {
             assignedTo,
             supervisor,
@@ -77,6 +93,22 @@ const updateTask = asyncHandler(async (req, res, next) => {
         } = req.body
         const { userId } = req.user
         const taskId = req.params.id
+
+        const validationRules = [
+            { value: title, type: 'string', message: 'assigned member must be a string' },
+            { value: description, type: 'string', message: 'description must be a string' },
+            { value: status, type: 'string', message: 'status must be a string' },
+            { value: priority, type: 'string', message: 'priority must be a string' },
+            { value: dueDate, type: 'string', message: 'due date must be a string' },
+            { value: tasksList, type: 'string', message: 'tasks list must be a string' }
+        ];
+
+        const validationResult = await inputVerification(validationRules);
+
+        if (!validationResult.isValid) {
+            res.status(400);
+            next(new Error(validationResult.errors.join(', ')));
+        }
 
         const access = await checkUserAccess(taskId, userId)
         

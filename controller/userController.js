@@ -2,7 +2,7 @@ const asyncHandler = require("express-async-handler");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const { User } = require('../model/userModel');
-const { sendEmail } = require('../middleware/handleMail');
+const { sendEmail } = require('../mailHandler/handleMail');
 const { inputVerification } = require("../verification/inputVerification");
 
 

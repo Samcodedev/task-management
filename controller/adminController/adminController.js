@@ -12,6 +12,17 @@ const setRole = asyncHandler(async (req, res, next) => {
         const groupId = _id
         const { role } = req.body
 
+        const validationRules = [
+            { value: role, type: 'string', message: 'role must be a string' }
+        ];
+
+        const validationResult = await inputVerification(validationRules);
+
+        if (!validationResult.isValid) {
+            res.status(400);
+            next(new Error(validationResult.errors.join(', ')));
+        }
+
 
         if (!await Group.findOne({
             "members.user": memberId,
@@ -73,6 +84,17 @@ const addMember = asyncHandler(async (req, res, next) => {
         const {
             newMemberId
         } = req.body
+
+        const validationRules = [
+            { value: newMemberId, type: 'string', message: 'new Member Id must be a string' }
+        ];
+
+        const validationResult = await inputVerification(validationRules);
+
+        if (!validationResult.isValid) {
+            res.status(400);
+            next(new Error(validationResult.errors.join(', ')));
+        }
         
 
         const group = await Group.findById(groupId)

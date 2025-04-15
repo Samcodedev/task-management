@@ -1,5 +1,6 @@
 const asyncHandler = require('express-async-handler')
 const Group = require("../model/groupModel");
+const { inputVerification } = require('./inputVerification');
 
 const adminVerification = asyncHandler(async (req, res, next) => {
     try {
@@ -8,6 +9,17 @@ const adminVerification = asyncHandler(async (req, res, next) => {
         const {
             memberId
         } = req.body
+
+        const validationRules = [
+            { value: memberId, type: 'string', message: 'member Id must be a string' }
+        ];
+
+        const validationResult = await inputVerification(validationRules);
+
+        if (!validationResult.isValid) {
+            res.status(400);
+            next(new Error(validationResult.errors.join(', ')));
+        }
 
 
         const group = await Group.findById(groupId)

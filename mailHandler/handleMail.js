@@ -1,17 +1,16 @@
 const nodemailer = require("nodemailer");
 
-// Create transporter once
+
 const transporter = nodemailer.createTransport({
     host: process.env.SMTP_HOST || "smtp.ethereal.email",
     port: process.env.SMTP_PORT || 587,
-    // secure: false, // true for 465, false for other ports
     auth: {
         user: process.env.SMTP_USER,
         pass: process.env.SMTP_PASS,
     },
 });
 
-// Email templates
+
 const emailTemplates = {
     verifyAccount: (data) => ({
         subject: "Verify Your Account",
@@ -78,40 +77,9 @@ const emailTemplates = {
             <p>If you didn't request a password reset, please ignore this email.</p>
         `
     }),
-
-    orderConfirmation: (orderDetails) => ({
-        subject: "Order Confirmation",
-        html: `
-            <h1>Order Confirmed!</h1>
-            <p>Your order has been successfully placed.</p>
-            <h2>Order Details:</h2>
-            <p>Order ID: ${orderDetails.orderId}</p>
-            <p>Amount: $${orderDetails.amount}</p>
-            <p>Status: ${orderDetails.status}</p>
-        `
-    }),
-
-    tradeConfirmation: (tradeDetails) => ({
-        subject: "Trade Confirmation",
-        html: `
-            <h1>Trade Executed Successfully!</h1>
-            <p>Your trade has been completed.</p>
-            <h2>Trade Details:</h2>
-            <p>Trade ID: ${tradeDetails.tradeId}</p>
-            <p>Product: ${tradeDetails.productName}</p>
-            <p>Quantity: ${tradeDetails.quantity}</p>
-            <p>Price: $${tradeDetails.price}</p>
-        `
-    })
 };
 
-/**
- * Send email using predefined templates
- * @param {string} to - Recipient email address
- * @param {string} templateName - Name of the template to use
- * @param {Object} data - Data to populate the template
- * @returns {Promise} - Resolves with mail info or rejects with error
- */
+
 const sendEmail = async (to, templateName, data = {}) => {
     try {
         if (!emailTemplates[templateName]) {
@@ -141,23 +109,5 @@ const sendEmail = async (to, templateName, data = {}) => {
     }
 };
 
-/**
- * Send custom email without template
- * @param {Object} mailOptions - Custom mail options
- * @returns {Promise} - Resolves with mail info or rejects with error
- */
-const sendCustomEmail = async (mailOptions) => {
-    try {
-        const info = await transporter.sendMail({
-            from: `"${process.env.MAIL_FROM_NAME}" <${process.env.MAIL_FROM_ADDRESS}>`,
-            ...mailOptions
-        });
-        console.log("Custom email sent: %s", info.messageId);
-        return info;
-    } catch (error) {
-        console.error("Error sending custom email:", error);
-        throw error;
-    }
-};
 
-module.exports = { sendEmail, sendCustomEmail };
+module.exports = { sendEmail };
