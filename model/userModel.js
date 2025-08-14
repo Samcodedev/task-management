@@ -33,7 +33,7 @@ const OTPSchema = new mongoose.Schema({
   createdAt: {
     type: Date,
     default: Date.now,
-    expires: 60 // OTP document will be automatically deleted after 60 seconds of user not verified
+    expires: 300 // OTP document will be automatically deleted after 60 seconds of user not verified
   }
 });
 
@@ -52,7 +52,7 @@ UserSchema.methods.generateOTP = async function() {
     { upsert: true, new: true }
   );
   
-  return otp; // Return as number
+  return otp;
 };
 
 UserSchema.methods.verifyOTP = async function(otpToVerify) {

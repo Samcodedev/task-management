@@ -17,33 +17,33 @@ const registerUser = asyncHandler(async (req, res, next) => {
             password
         } = req.body;
 
-        const validationRules = [
-            { value: firstName, type: 'string', message: 'First name must be a string' },
-            { value: lastName, type: 'string', message: 'Last name must be a string' },
-            { value: UserName, type: 'string', message: 'Username must be a string' },
-            { value: email, type: 'string', message: 'Email must be a string' },
-            { value: phoneNumber, type: 'string', message: 'Phone number must be a string' },
-            { value: password, type: 'string', message: 'Password must be a string' }
-        ];
+        // const validationRules = [
+        //     { value: firstName, type: 'string', message: 'First name must be a string' },
+        //     { value: lastName, type: 'string', message: 'Last name must be a string' },
+        //     { value: UserName, type: 'string', message: 'Username must be a string' },
+        //     { value: email, type: 'string', message: 'Email must be a string' },
+        //     { value: phoneNumber, type: 'string', message: 'Phone number must be a string' },
+        //     { value: password, type: 'string', message: 'Password must be a string' }
+        // ];
 
-        const validationResult = await inputVerification(validationRules);
+        // const validationResult = await inputVerification(validationRules);
 
-        if (!validationResult.isValid) {
-            res.status(400);
-            next(new Error(validationResult.errors.join(', ')));
-        }
+        // if (!validationResult.isValid) {
+        //     res.status(400);
+        //     next(new Error(validationResult.errors.join(', ')));
+        // }
 
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(email)) {
-            res.status(400);
-            next(new Error("Invalid email format"));
-        }
+        // const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        // if (!emailRegex.test(email)) {
+        //     res.status(400);
+        //     next(new Error("Invalid email format"));
+        // }
 
-        if (password.length < 8) {
-            res.status(400);
-            next(new Error("Password must be at least 8 characters long"));
-            return;
-        }
+        // if (password.length < 8) {
+        //     res.status(400);
+        //     next(new Error("Password must be at least 8 characters long"));
+        //     return;
+        // }
 
         if (await User.findOne({ email })) {
             res.status(400);
@@ -80,17 +80,17 @@ const verifyAccount = asyncHandler(async (req, res, next) => {
     try {
         const { email, otp } = req.body;
 
-        const validationRules = [
-            { value: email, type: 'string', message: 'Email must be a string' },
-            { value: otp, type: 'integer', message: 'OTP must be a number' }
-        ];
+        // const validationRules = [
+        //     { value: email, type: 'string', message: 'Email must be a string' },
+        //     { value: otp, type: 'integer', message: 'OTP must be a number' }
+        // ];
 
-        const validationResult = await inputVerification(validationRules);
+        // const validationResult = await inputVerification(validationRules);
 
-        if (!validationResult.isValid) {
-            res.status(400);
-            next(new Error(validationResult.errors.join(', ')));
-        }
+        // if (!validationResult.isValid) {
+        //     res.status(400);
+        //     next(new Error(validationResult.errors.join(', ')));
+        // }
 
         const user = await User.findOne({ email });
         if (!user) {
@@ -122,22 +122,22 @@ const loginUser = asyncHandler(async (req, res, next) => {
     try {
         const { email, password } = req.body;
 
-        const validationRules = [
-            { value: email, type: 'string', message: 'Email must be a string' },
-            { value: password, type: 'string', message: 'Password must be a string' }
-        ];
+        // const validationRules = [
+        //     { value: email, type: 'string', message: 'Email must be a string' },
+        //     { value: password, type: 'string', message: 'Password must be a string' }
+        // ];
 
-        const validationResult = await inputVerification(validationRules);
+        // const validationResult = await inputVerification(validationRules);
 
-        if (!validationResult.isValid) {
-            res.status(400);
-            next(new Error(validationResult.errors.join(', ')));
-        }
+        // if (!validationResult.isValid) {
+        //     res.status(400);
+        //     next(new Error(validationResult.errors.join(', ')));
+        // }
         
-        if (!email || !password) {
-            res.status(400);
-            next(new Error("All fields are required"))
-        }
+        // if (!email || !password) {
+        //     res.status(400);
+        //     next(new Error("All fields are required"))
+        // }
 
         const user = await User.findOne({ email });
         if (!user) {
@@ -183,7 +183,7 @@ const getUser = asyncHandler(async (req, res, next) => {
         }
         res.status(200).json({
             success: true,
-            message: "Login successful",
+            message: "Get user successful",
             data: [
                 {
                     _id: user._id,
@@ -208,16 +208,16 @@ const forgetPassword = asyncHandler(async (req, res, next) => {
     try {
         const { email } = req.body;
 
-        const validationRules = [
-            { value: email, type: 'string', message: 'Email must be a string' }
-        ];
+        // const validationRules = [
+        //     { value: email, type: 'string', message: 'Email must be a string' }
+        // ];
 
-        const validationResult = await inputVerification(validationRules);
+        // const validationResult = await inputVerification(validationRules);
 
-        if (!validationResult.isValid) {
-            res.status(400);
-            next(new Error(validationResult.errors.join(', ')));
-        }
+        // if (!validationResult.isValid) {
+        //     res.status(400);
+        //     next(new Error(validationResult.errors.join(', ')));
+        // }
 
 
         const user = await User.findOne({email})
@@ -245,17 +245,17 @@ const resetPassword = asyncHandler(async (req, res, next) => {
     try {
         const { token, newPassword } = req.body;
 
-        const validationRules = [
-            { value: token, type: 'string', message: 'token must be a string' },
-            { value: newPassword, type: 'string', message: 'new password must be a string' }
-        ];
+        // const validationRules = [
+        //     { value: token, type: 'string', message: 'token must be a string' },
+        //     { value: newPassword, type: 'string', message: 'new password must be a string' }
+        // ];
 
-        const validationResult = await inputVerification(validationRules);
+        // const validationResult = await inputVerification(validationRules);
 
-        if (!validationResult.isValid) {
-            res.status(400);
-            next(new Error(validationResult.errors.join(', ')));
-        }
+        // if (!validationResult.isValid) {
+        //     res.status(400);
+        //     next(new Error(validationResult.errors.join(', ')));
+        // }
 
 
         const decoded = jwt.verify(token, process.env.REFRESH_TOKEN_SECRET)
@@ -300,16 +300,16 @@ const resendOTP = asyncHandler(async (req, res, next) => {
     try {
         const { email } = req.body;
 
-        const validationRules = [
-            { value: email, type: 'string', message: 'Email must be a string' }
-        ];
+        // const validationRules = [
+        //     { value: email, type: 'string', message: 'Email must be a string' }
+        // ];
 
-        const validationResult = await inputVerification(validationRules);
+        // const validationResult = await inputVerification(validationRules);
 
-        if (!validationResult.isValid) {
-            res.status(400);
-            next(new Error(validationResult.errors.join(', ')));
-        }
+        // if (!validationResult.isValid) {
+        //     res.status(400);
+        //     next(new Error(validationResult.errors.join(', ')));
+        // }
 
         const user = await User.findOne({ email });
         if (!user) {
