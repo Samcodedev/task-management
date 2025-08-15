@@ -16,15 +16,19 @@ const validateCreateTask = [
 
     body('status')
         .trim()
-        .isIn(["pending", "in-progress", "completed", "on-hold"]).withMessage('Status can be only one of the following "pending", "in-progress", "completed", "on-hold"'),
+        .optional({ checkFalsy: true })
+        .isIn(["pending", "in-progress", "on-hold"]).withMessage('Status can be only one of the following "pending", "in-progress", "completed", "on-hold"')
+        .customSanitizer((value) => value || 'pending'),
 
     body('priority')
         .trim()
-        .isIn(["low", "medium", "high", "urgent"]).withMessage('Priority can be only one of the following "low", "medium", "high", "urgent"'),
+        .optional({ checkFalsy: true })
+        .isIn(["low", "medium", "high", "urgent"]).withMessage('Priority can be only one of the following "low", "medium", "high", "urgent"')
+        .customSanitizer((value) => value || 'medium'),
 
     body('dueDate')
         .notEmpty().withMessage('Task due date is required')
-        .isDate().withMessage('Input a valid date format dd-mm-yy'),
+        .isDate().withMessage('Input a valid date format yyyy-mm-dd'),
 
     body('tasksList')
         .notEmpty().withMessage('Task List is required')
