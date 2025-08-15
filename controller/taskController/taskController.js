@@ -1,67 +1,26 @@
 const asyncHandler = require('express-async-handler');
 const Task = require('../../model/taskModel');
-
+const User = require('../../model/userModel');
 
 
 const createTask = asyncHandler(async (req, res, next) => {
     try {
-
-        const {
-            title,
-            description,
-            status,
-            priority,
-            dueDate,
-            tasksList
-        } = req.body
-
-        const validationRules = [
-            { value: title, type: 'string', message: 'assigned member must be a string' },
-            { value: description, type: 'string', message: 'description must be a string' },
-            { value: status, type: 'string', message: 'status must be a string' },
-            { value: priority, type: 'string', message: 'priority must be a string' },
-            { value: dueDate, type: 'string', message: 'due date must be a string' },
-            { value: tasksList, type: 'string', message: 'tasks list must be a string' }
-        ];
-
-        const validationResult = await inputVerification(validationRules);
-
-        if (!validationResult.isValid) {
-            res.status(400);
-            next(new Error(validationResult.errors.join(', ')));
-        }
-
-        const {
-            assignedTo,
-            supervisor,
-            user,
-            groupId
-        } = req.taskVerify
-
-        if (!title || !description) {
-            res.status(400);
-            next(new Error("All input field are required"))
-        }
-
-        if (user.role !== "admin" && user.role !== "manager") {
+        if (req.taskVerify.user.role !== "admin" && req.taskVerify.user.role !== "manager") {
             res.status(404);
             next(new Error("Member not permitted to create task"))
         }
 
-        // note add task to user data
-        
-
         const createTask = await Task.create({
-            title,
-            description,
-            tasksList,
-            assignedTo: assignedTo.assignedTo,
-            supervisor: supervisor.supervisor,
-            group: groupId,
-            status,
-            priority,
-            dueDate,
-            createdBy: user.userId
+            title: req.body.title,
+            description: req.body.description,
+            tasksList: req.body.tasksList,
+            assignedTo: req.taskVerify.assignedTo.assignedTo,
+            supervisor: req.taskVerify.supervisor.supervisor,
+            group: req.taskVerify.groupId,
+            status: req.body.status,
+            priority: req.body.priority,
+            dueDate: req.body.dueDate,
+            createdBy: req.taskVerify.user.userId
         })
 
         if (!createTask) {
@@ -69,8 +28,19 @@ const createTask = asyncHandler(async (req, res, next) => {
             next(new Error("something went wrong while creating task"))
         }
 
+        const allUserIds = [req.taskVerify.assignedTo.assignedTo, req.taskVerify.supervisor.supervisor];
+
+        await Promise.all(
+            allUserIds.map(userId  =>
+                User.findByIdAndUpdate(
+                    userId,
+                    { $addToSet: { tasksAssigned: createTask._id } }
+                )
+            )
+        );
+
         res.status(200).json({
-            message: `${title} created successfully`
+            message: `${req.body.title} created successfully`
         })
 
 
@@ -82,35 +52,7 @@ const createTask = asyncHandler(async (req, res, next) => {
 
 const updateTask = asyncHandler(async (req, res, next) => {
     try {
-        const {
-            title,
-            description,
-            status,
-            priority,
-            dueDate,
-            tasksList,
-            message
-        } = req.body
-        const { userId } = req.user
-        const taskId = req.params.id
-
-        const validationRules = [
-            { value: title, type: 'string', message: 'assigned member must be a string' },
-            { value: description, type: 'string', message: 'description must be a string' },
-            { value: status, type: 'string', message: 'status must be a string' },
-            { value: priority, type: 'string', message: 'priority must be a string' },
-            { value: dueDate, type: 'string', message: 'due date must be a string' },
-            { value: tasksList, type: 'string', message: 'tasks list must be a string' }
-        ];
-
-        const validationResult = await inputVerification(validationRules);
-
-        if (!validationResult.isValid) {
-            res.status(400);
-            next(new Error(validationResult.errors.join(', ')));
-        }
-
-        const access = await checkUserAccess(taskId, userId)
+        const access = await checkUserAccess(req.params.id, req.user.userId)
         
         if (!access) {
             res.status(403)
@@ -119,21 +61,22 @@ const updateTask = asyncHandler(async (req, res, next) => {
 
         if (access.role === 'creator') {
             const updateTask = await Task.findByIdAndUpdate(
-                taskId,
+                req.params.id,
                 {
-                    $push: { tasksList: tasksList },
+                    $push: { tasksList: req.body.tasksList },
                     $set: {
-                        title,
-                        description,
-                        priority,
-                        dueDate,
+                        title: req.body.title,
+                        description: req.body.description,
+                        priority: req.body.priority,
+                        status: req.body.status,
+                        dueDate: req.body.dueDate,
                     }
                 },
                 {new: true}
             )
 
-            if (message) {
-                const addComments = await addComment(taskId, userId, message);
+            if (req.body.message) {
+                const addComments = await addComment(req.params.id, req.user.userId, req.body.message);
 
                 if (!addComments) {
                     return res.status(404).json({ 
@@ -154,19 +97,19 @@ const updateTask = asyncHandler(async (req, res, next) => {
 
         if (access.role === 'supervisor') {
             const updateTask = await Task.findByIdAndUpdate(
-                taskId,
+                req.params.id,
                 {
                     $set: {
-                        status,
-                        priority,
+                        status: req.body.status,
+                        priority: req.body.priority,
                     },
-                    $push: { tasksList: tasksList },
+                    $push: { tasksList: req.body.tasksList },
                 },
                 {new: true}
             )
 
-            if (message) {
-                const addComments = await addComment(taskId, userId, message);
+            if (req.body.message) {
+                const addComments = await addComment(req.params.id, req.user.userId, req.body.message);
 
                 if (!addComments) {
                     return res.status(404).json({ 
@@ -187,16 +130,16 @@ const updateTask = asyncHandler(async (req, res, next) => {
 
         if (access.role === 'assignee') {
             const updateTask = await Task.findByIdAndUpdate(
-                taskId,
+                req.params.id,
                 {
-                    status,
-                    comments: {$push: { message: message }}
+                    status: req.body.status,
+                    comments: {$push: { message: req.body.message }}
                 },
                 {new: true}
             )
 
-            if (message) {
-                const addComments = await addComment(taskId, userId, message);
+            if (req.body.message) {
+                const addComments = await addComment(req.params.id, req.user.userId, req.body.message);
 
                 if (!addComments) {
                     return res.status(404).json({ 

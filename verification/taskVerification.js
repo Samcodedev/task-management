@@ -4,64 +4,46 @@ const Group = require("../model/groupModel");
 
 const taskAssignVerification = asyncHandler(async (req, res, next) => {
     try {
-        const {
-            assignedTo,
-            supervisor
-        } = req.body
-        const { userId } = req.user
-        const groupId = req.params.id
-
-        const validationRules = [
-            { value: assignedTo, type: 'string', message: 'assigned member must be a string' },
-            { value: supervisor, type: 'string', message: 'supervisor must be a string' }
-        ];
-
-        const validationResult = await inputVerification(validationRules);
-
-        if (!validationResult.isValid) {
-            res.status(400);
-            next(new Error(validationResult.errors.join(', ')));
-        }
-        
-        
-        if (!await Group.findById(groupId)) {
+        if (!await Group.findById(req.params.id)) {
             res.status(404)
             next(new Error('group not found'))
         }
     
-        const checkUser = await checkUserInGroup(groupId, userId)
+        const checkUser = await checkUserInGroup(req.params.id, req.user.userId)
         if (checkUser === null) {
             res.status(404)
-            next(new Error('user not on the group'))
+            next(new Error("You're not on this group"))
         }
     
-        const checkAssigned = await checkUserInGroup(groupId, assignedTo)
+        const checkAssigned = await checkUserInGroup(req.params.id, req.body.assignedTo)
         if (checkAssigned === null) {
             res.status(404)
             next(new Error('user assigned not in group'))
         }
     
-        const checkSupervisor = await checkUserInGroup(groupId, supervisor)
+        const checkSupervisor = await checkUserInGroup(req.params.id, req.body.supervisor)
         if (checkSupervisor === null) {
             res.status(404)
             next(new Error('supervisor not in group'))
         }
 
+        
+
 
         let verify = { 
             assignedTo: {
-                assignedTo, 
+                assignedTo: req.body.assignedTo, 
                 role: checkAssigned.role
             },
             supervisor: {
-                supervisor,
+                supervisor: req.body.supervisor,
                 role: checkSupervisor.role 
             },
             user: {
-                userId,
+                userId: req.user.userId,
                 role: checkUser.role
             },
-            groupId
+            groupId: req.params.id
         }
 
         req.taskVerify = verify

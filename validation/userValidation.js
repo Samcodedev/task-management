@@ -3,16 +3,19 @@ const { body, validationResult } = require('express-validator');
 const validateRegistration = [
     body('firstName')
         .notEmpty().withMessage('First Name is required')
+        .isString().withMessage('First name should be in String only')
         .trim()
         .escape(),
 
     body('lastName')
         .notEmpty().withMessage('Last Name is required')
+        .isString().withMessage('Last Name should be in String only')
         .trim()
         .escape(),
 
     body('UserName')
         .notEmpty().withMessage('Username is required')
+        .isString().withMessage('Username should be in String only')
         .isLength({ min: 4 }).withMessage('Username must be at least 4 characters long')
         .trim()
         .escape(),
@@ -105,9 +108,10 @@ const validateVerifyAccount = [
 
 const validateResetPassword = [
     body('token')
-        .notEmpty().withMessage('token is required'),
+        .notEmpty().withMessage('token is required')
+        .isString().withMessage('token is always a String'),
 
-    body('password')
+    body('newPassword')
         .notEmpty().withMessage('Password is required')
         .isLength({ min: 6 }).withMessage('Password must be at least 6 characters long')
         .matches(/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).*$/)
