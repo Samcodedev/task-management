@@ -30,7 +30,8 @@ const registerUser = asyncHandler(async (req, res, next) => {
 
         res.status(201).json({
             success: true,
-            message: "Registration successful! Please check your email to verify your account."
+            message: "Registration successful! Please check your email to verify your account.",
+            data: user
         });
     } catch (err) {
         res.status(500)
